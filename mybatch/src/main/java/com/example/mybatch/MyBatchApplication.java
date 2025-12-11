@@ -44,10 +44,6 @@ public class MyBatchApplication {
         return args -> {
             // NOTE: Vous pouvez désactiver ce CommandLineRunner après avoir validé
             // qu'il fonctionne, si vous préférez que seul le CRON le lance.
-
-            System.out.println("-----------------------------------------------------------------");
-            System.out.println("🚀 DÉTECTION DU LANCEUR DE TEST: Tentative de lancement immédiat...");
-            System.out.println("-----------------------------------------------------------------");
             
             // Le 'timestamp' rend le JobParameters unique à chaque démarrage,
             // forçant Spring Batch à considérer chaque lancement comme un nouveau travail.
@@ -58,9 +54,7 @@ public class MyBatchApplication {
 
             try {
                 jobLauncher.run(payrollJob, params);
-                System.out.println("✅ Job 'payrollJob' lancé avec succès.");
             } catch (Exception e) {
-                System.err.println("❌ ERREUR LORS DU LANCEMENT IMMÉDIAT DU BATCH:");
                 e.printStackTrace();
             }
         };

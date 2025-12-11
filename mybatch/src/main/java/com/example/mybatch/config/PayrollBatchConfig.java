@@ -68,7 +68,6 @@ public class PayrollBatchConfig {
 
             // RÈGLE 1 : Ignorer si mois en cours (On ne traite que le passé)
             if (!workDate.isBefore(today.withDayOfMonth(1))) {
-                System.out.println("⏳ Ignoré (Mois non terminé) : " + workDate);
                 return null;
             }
             
@@ -79,14 +78,12 @@ public class PayrollBatchConfig {
             );
             
             if (existingPayslip.isPresent()) {
-                System.out.println("🛑 Ignoré (Doublon) : Bulletin déjà généré pour " + workDate);
                 return null; 
             }
 
             // ----------------------------------------------------
             // 2. CALCULS & ACTIONS (Si le bulletin est NOUVEAU et PASSÉ)
             // ----------------------------------------------------
-            System.out.println("✅ Génération Bulletin : " + workHours.getEmployee().getNom() + " - " + workDate);
 
             Double taux = workHours.getEmployee().getTauxHoraire() != null ? workHours.getEmployee().getTauxHoraire() : 0.0;
             Double h = workHours.getHoursWorked() != null ? workHours.getHoursWorked() : 0.0;

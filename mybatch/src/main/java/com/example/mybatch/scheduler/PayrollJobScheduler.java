@@ -26,7 +26,6 @@ public class PayrollJobScheduler {
     @Scheduled(cron = "0 0 1 1 * ?", zone = "Europe/Paris")
     public void runMonthlyJob() {
         try {
-            System.out.println("⏰ Lancement du batch programmé (CRON 1er du mois à 1h00)...");
             
             JobParameters params = new JobParametersBuilder()
                     .addString("JobID", String.valueOf(System.currentTimeMillis()))
@@ -35,7 +34,6 @@ public class PayrollJobScheduler {
             
             jobLauncher.run(payrollJob, params);
             
-            System.out.println("✅ Job 'payrollJob' (CRON) lancé avec succès.");
         } catch (Exception e) {
             e.printStackTrace();
         }

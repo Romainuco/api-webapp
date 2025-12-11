@@ -26,9 +26,7 @@ public class EmailService {
      * @param attachmentPath Le chemin absolu du fichier PDF à attacher.
      */
     public void sendPayslipEmail(String toEmail, String prenom, String month, String attachmentPath) {
-        System.out.println("📧 Tentative d'envoi de mail à : " + toEmail + " pour la période " + month);
         // --- NOUVEAU LOG DE DIAGNOSTIC ---
-        System.out.println("🔍 Chemin de la pièce jointe (PDF) : " + attachmentPath);
         // ---------------------------------
         
         try {
@@ -58,26 +56,18 @@ public class EmailService {
                 FileSystemResource res = new FileSystemResource(file);
                 String attachmentName = file.getName(); 
                 helper.addAttachment(attachmentName, res);
-                System.out.println("✅ Pièce jointe attachée : " + attachmentName);
             } else {
                 // --- LOG DE DIAGNOSTIC AMÉLIORÉ ---
-                System.out.println("❌ ÉCHEC ATTACHEMENT: Fichier introuvable ou illisible.");
-                System.out.println("   -> File.exists() : " + file.exists());
-                System.out.println("   -> File.canRead() : " + file.canRead());
                 // ---------------------------------
                 return; 
             }
 
             // --- LIGNE CRITIQUE : L'appel au serveur SMTP (MailHog) ---
-            System.out.println("📬 Envoi en cours vers mailhog:1025...");
             mailSender.send(message); 
             // ----------------------------------------------------------
             
-            System.out.println("✅ Email envoyé avec succès à " + toEmail);
 
         } catch (Exception e) {
-            // Utilisation d'un log standard (ou System.out) pour les erreurs au lieu de System.err
-            System.out.println("❌ ERREUR LORS DE L'ENVOI DU MAIL À " + toEmail + " : " + e.getMessage());
             e.printStackTrace();
         }
     }
