@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Saisie des Heures</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Charte Graphique Bordeaux */
+        .bg-bordeaux { background-color: #800020 !important; color: white !important; }
+        .text-bordeaux { color: #800020 !important; }
+        .btn-bordeaux { background-color: #800020 !important; border-color: #800020 !important; color: white !important; }
+        .btn-bordeaux:hover { background-color: #580016 !important; border-color: #580016 !important; }
+        
+        /* Styles pour le tableau de suivi */
+        .status-todo { color: #dc3545; font-weight: bold; } /* Rouge */
+        .status-done { color: #198754; font-weight: bold; } /* Vert */
+        
+        /* Petite animation sur les lignes du tableau */
+        tr { transition: background-color 0.2s; }
+        
+        /* Lien discret sur les badges */
+        a.badge-link { text-decoration: none; cursor: pointer; display: inline-block; transition: transform 0.2s; }
+        a.badge-link:hover { transform: scale(1.05); }
+    </style>
+</head>
+<body class="bg-light p-4">
+
+<div class="container">
+    
+    <!-- En-tête avec bouton retour -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-bordeaux"><i class="fas fa-calendar-alt me-2"></i>Déclaration d'activité</h2>
+        <a th:href="@{/rh-dashboard}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i> Retour au Dashboard
+        </a>
+    </div>
+
+    <!-- Message de succès (affiché après sauvegarde) -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-check-circle me-2"></i> <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="row">
+        
+        <!-- ============================================= -->
+        <!-- COLONNE GAUCHE : LE FORMULAIRE DE SAISIE      -->
+        <!-- ============================================= -->
+        <div class="col-md-5">
+            <div class="card shadow-sm mb-4 sticky-top" style="top: 20px; z-index: 100;">
+                <div class="card-header bg-bordeaux text-white">
+                    <i class="fas fa-edit me-2"></i> Saisie des heures
+                </div>
+                <div class="card-body">
+                    
+                    <form th:action="@{/rh/hours}" th:object="${workHours}" method="post">
+
+                        <!-- 1. SÉLECTEUR D'EMPLOYÉ (RECHARGE LA PAGE) -->
+                        <div class="mb-3">
+                            <label for="employeeId" class="form-label fw-bold">Employé concerné :</label>
+                            <!-- L'attribut onchange est crucial ici : il recharge la page avec l'ID -->
+                            <select name="employeeId" id="employeeId" class="form-select border-bordeaux" 
+                                    onchange="window.location.href='/rh/hours?employeeId=' + this.value" required>
+                                <option value="" disabled th:selected="${selectedEmployee == null}">-- Choisir dans la liste --</option>
+                                <option th:each="emp : ${employees}" 
+                                        th:value="${emp.id}" 
+                                        th:text="${emp.nom + ' ' + emp.prenom + ' (' + emp.matricule + ')'}"
+                                        th:selected="${selectedEmployee != null && selectedEmployee.id == emp.id}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <hr>
+
+                        <!-- La suite ne s'affiche que si un employé est choisi -->
+                        <div th:if="${selectedEmployee != null}">
+                            
+                            <div class="alert alert-info py-2 mb-3">
+                                <small>Saisie pour : <strong th:text="${selectedEmployee.prenom + ' ' + selectedEmployee.nom}"></strong></small>
+                            </div>
+
+                            <!-- 2. DATE (Période) -->
+                            <div class="mb-3">
+                                <label for="period" class="form-label fw-bold">Période :</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="far fa-calendar-alt"></i></span>
+                                    <input type="date" id="period" th:field="*{period}" class="form-control" required>
+                                </div>
+                                <div class="form-text text-muted" style="font-size: 0.8rem;">Le formulaire enregistrera automatiquement le 1er du mois.</div>
+                            </div>
+
+                            <div class="row">
+                                <!-- 3. HEURES -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="hours" class="form-label fw-bold">Heures :</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" id="hours" th:field="*{hoursWorked}" class="form-control" placeholder="151.67" required>
+                                        <span class="input-group-text">h</span>
+                                    </div>
+                                </div>
+                                <!-- 4. JOURS -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="days" class="form-label fw-bold">Jours :</label>
+                                    <div class="input-group">
+                                        <input type="number" id="days" th:field="*{daysWorked}" class="form-control" placeholder="20" required>
+                                        <span class="input-group-text">j</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-grid mt-2">
+                                <button type="submit" class="btn btn-bordeaux btn-lg">
+                                    <i class="fas fa-save me-2"></i> Enregistrer
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Image d'attente si pas de sélection -->
+                        <div th:if="${selectedEmployee == null}" class="text-center text-muted py-4">
+                            <i class="fas fa-arrow-up mb-3 fa-2x"></i><br>
+                            Veuillez sélectionner un employé<br>pour débloquer la saisie.
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================= -->
+        <!-- COLONNE DROITE : TABLEAU DE BORD MENSUEL      -->
+        <!-- ============================================= -->
+        <div class="col-md-7">
+            <div class="card shadow-sm" th:if="${selectedEmployee != null}">
+                <div class="card-header bg-white text-bordeaux fw-bold d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-history me-2"></i> État des saisies mensuelles</span>
+                    <span class="badge bg-secondary" th:text="${selectedEmployee.matricule}">MAT123</span>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0 text-center align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="py-3">Période</th>
+                                <th>Heures</th>
+                                <th>Jours</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Boucle sur l'historique généré par le Contrôleur -->
+                            <tr th:each="h : ${history}" 
+                                th:classappend="${h.hoursWorked == null} ? 'table-danger bg-opacity-10' : ''">
+                                
+                                <!-- 1. La Période -->
+                                <td class="fw-bold text-secondary" 
+                                    th:text="${#temporals.format(h.period, 'MMMM yyyy').substring(0, 1).toUpperCase() + #temporals.format(h.period, 'MMMM yyyy').substring(1)}">
+                                    Novembre 2025
+                                </td>
+                                
+                                <!-- 2. Heures -->
+                                <td class="fw-bold" th:text="${h.hoursWorked != null ? h.hoursWorked + ' h' : '-'}"></td>
+
+                                <!-- 3. Jours (NOUVEAU) -->
+                                <td class="fw-bold" th:text="${h.daysWorked != null ? h.daysWorked + ' j' : '-'}"></td>
+                                
+                                <!-- 4. Statut (Cliquable pour action) -->
+                                <td>
+                                    <!-- Si FAIT : Lien vert pour modifier -->
+                                    <a th:if="${h.hoursWorked != null}" 
+                                       th:href="@{/rh/hours(employeeId=${selectedEmployee.id}, date=${h.period})}"
+                                       class="badge-link" title="Modifier">
+                                        <span class="badge bg-success rounded-pill">
+                                            <i class="fas fa-check me-1"></i> FAIT
+                                        </span>
+                                    </a>
+
+                                    <!-- Si À FAIRE : Lien rouge pour saisir -->
+                                    <a th:if="${h.hoursWorked == null}" 
+                                       th:href="@{/rh/hours(employeeId=${selectedEmployee.id}, date=${h.period})}"
+                                       class="badge-link" title="Cliquez pour saisir">
+                                        <span class="badge bg-danger rounded-pill">
+                                            <i class="fas fa-exclamation-triangle me-1"></i> À FAIRE
+                                        </span>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div th:if="${#lists.isEmpty(history)}" class="p-4 text-center text-muted">
+                        Aucun historique généré. Vérifiez la date d'embauche de l'employé.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Image fantôme si pas de sélection -->
+            <div th:if="${selectedEmployee == null}" class="text-center text-muted mt-5">
+                <i class="fas fa-clipboard-list fa-5x mb-3 text-secondary opacity-25"></i>
+                <h4 class="text-secondary opacity-50">En attente de sélection</h4>
+                <p>Choisissez un employé dans la liste à gauche<br>pour voir son tableau de bord mensuel.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

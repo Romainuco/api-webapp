@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # 1. Base de données (PostgreSQL)
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - mon-reseau
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Serveur Mail (MailHog) - CORRIGÉ (DÉCOMMENTÉ)
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025" # Port SMTP (pour le Batch)
+      - "8025:8025" # Interface web (pour vous)
+    networks:
+      - mon-reseau
+    restart: always
+
+  # 3. API (Backend)
+  my-api:
+    build: ./my-api
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    environment:
+      # Configuration BDD
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    networks:
+      - mon-reseau
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # 4. WebApp (Frontend)
+  mywebapp:
+    build: ./mywebapp
+    restart: on-failure
+    ports:
+      - "8081:8080"
+    environment:
+      - MY_API_URL=http://my-api:8080
+    volumes:
+      - ./shared-pdfs:/app/pdfs
+    networks:
+      - mon-reseau
+    depends_on:
+      my-api:
+        condition: service_started
+
+  # 5. Batch (Génération Paie)
+  mybatch:
+    build: ./mybatch
+    restart: on-failure
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      
+    volumes:
+      - ./shared-pdfs:/app/pdfs
+    networks:
+      - mon-reseau
+    depends_on:
+      db:
+        condition: service_healthy
+      mailhog: 
+        condition: service_started
+
+networks: 
+  mon-reseau:
+
+volumes: 
+  db-data:

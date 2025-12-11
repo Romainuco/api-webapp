@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mon espace employé</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root { --bordeaux: #6d071a; }
+    body { background-color: #f8f9fa; }
+    .navbar-dark.bg-bordeaux { background-color: var(--bordeaux) !important; }
+    h1, h4 { color: var(--bordeaux); }
+    .card { border: 1px solid var(--bordeaux); border-radius: 0.5rem; }
+    .btn-deconnexion { background: #fff; color: var(--bordeaux); border: 2px solid #fff; font-weight: 500; }
+    .btn-deconnexion:hover { background: var(--bordeaux); color: #fff; }
+    th { background-color: var(--bordeaux); color: white; }
+  </style>
+</head>
+<body class="p-4">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-bordeaux mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="#">Mon espace employé</a>
+    <div class="d-flex ms-auto">
+      <span class="navbar-text text-white me-3" th:text="${'Bonjour, ' + user.prenom}"></span>
+      <a th:href="@{/logout}" class="btn btn-deconnexion"><i class="fas fa-right-from-bracket me-1"></i> Déconnexion</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="card shadow-sm p-4 mb-4">
+    <h4><i class="fas fa-address-card me-2"></i> Informations personnelles</h4>
+    <hr>
+    <div>
+      <p><strong>Matricule :</strong> <span th:text="${user.matricule}"></span></p>
+      <p><strong>Nom :</strong> <span th:text="${user.nom}"></span></p>
+      <p><strong>Prénom :</strong> <span th:text="${user.prenom}"></span></p>
+      <p><strong>Poste :</strong> <span th:text="${user.poste}"></span></p>
+      <p><strong>Date d'embauche :</strong> <span th:text="${user.dateEmbauche}"></span></p>
+      <p><strong>Taux Horaire :</strong> <span th:text="${user.tauxHoraire + ' €'}"></span></p>
+      <p><strong>Email :</strong> <span th:text="${user.email}"></span></p>
+    </div>
+  </div>
+
+  <div class="card shadow-sm p-4">
+    <h4><i class="fas fa-file-invoice-dollar me-2"></i> Mes bulletins de paie</h4>
+    <hr>
+
+    <table class="table table-striped align-middle text-center">
+      <thead>
+      <tr>
+        <th>Mois</th>
+        <th>Jours Travaillés</th>
+        <th>Salaire Net (€)</th>
+        <th>Télécharger</th>
+      </tr>
+      </thead>
+      <tbody>
+
+      <tr th:each="p : ${myPayslips}">
+        <td th:text="${p.period}"></td>
+        <td th:text="${p.daysWorked}"></td>
+        <td th:text="${p.totalSalary}"></td>
+        <td>
+          <!-- BOUTON QUI OUVRE + TÉLÉCHARGE -->
+          <button class="btn btn-sm btn-outline-primary"
+                          th:if="${p.pdfPath != null}"
+                          th:data-url="@{'/pdfs/' + ${#strings.substring(p.pdfPath, '/app/pdfs/'.length())}}"
+                          onclick="openAndDownload(this.getAttribute('data-url'))">
+          <i class="fa-solid fa-download"></i>
+        </td>
+      </tr>
+
+      <tr th:if="${#lists.isEmpty(myPayslips)}">
+        <td colspan="4" class="text-muted">Aucun bulletin disponible pour le moment.</td>
+      </tr>
+
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SCRIPT OUVRIR + TÉLÉCHARGER -->
+<script>
+function openAndDownload(url) {
+    // 1. Ouvre le PDF dans un nouvel onglet
+    window.open(url, '_blank');
+
+    // 2. Force le téléchargement
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '';  // le nom du fichier sera pris automatiquement
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+}
+</script>
+
+</body>
+</html>

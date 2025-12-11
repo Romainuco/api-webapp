@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Détail Employé</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bordeaux: #6d071a; }
+        body { background-color: #f8f9fa; }
+        .navbar-dark.bg-bordeaux { background-color: var(--bordeaux) !important; }
+        h1, h4 { color: var(--bordeaux); }
+        .card { border: 1px solid var(--bordeaux); border-radius: 0.5rem; }
+        .btn-retour { background-color: #6c757d; color: #fff; border: none; transition: all 0.3s ease; }
+        .btn-retour:hover { background-color: var(--bordeaux); color: #fff; }
+    </style>
+</head>
+<body class="bg-light p-4">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-bordeaux mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">Détail Employé</a>
+        <div class="ms-auto">
+            <a th:href="@{/logout}" class="btn btn-light" style="color: #6d071a; font-weight: bold;">Déconnexion</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card shadow-sm p-4">
+        <h4><i class="fas fa-address-card me-2"></i> Informations personnelles</h4>
+        <hr>
+        <!-- Correction ici : on utilise 'employee' et les champs français -->
+        <p><strong>Matricule :</strong> <span th:text="${employee.matricule}"></span></p>
+        <p><strong>Nom :</strong> <span th:text="${employee.nom}"></span></p>
+        <p><strong>Prénom :</strong> <span th:text="${employee.prenom}"></span></p>
+        <p><strong>Poste :</strong> <span th:text="${employee.poste}"></span></p>
+        <p><strong>Date d'embauche :</strong> <span th:text="${employee.dateEmbauche}"></span></p>
+        <p><strong>Taux Horaire :</strong> <span th:text="${employee.tauxHoraire + ' €'}"></span></p>
+        <p><strong>Email :</strong> <span th:text="${employee.email}"></span></p>
+    </div>
+
+    <div class="text-center mt-4">
+        <a th:href="@{/rh-dashboard}" class="btn btn-retour">
+            <i class="fas fa-arrow-left me-1"></i> Retour au Dashboard
+        </a>
+    </div>
+</div>
+
+</body>
+</html>
